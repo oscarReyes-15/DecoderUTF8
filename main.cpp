@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 
     Decoder decoderUTF8;
     decoderUTF8.leerFileEnBufferDeBytes(buffer);
-
+    decoderUTF8.getReport();
 
     return 0;
 }

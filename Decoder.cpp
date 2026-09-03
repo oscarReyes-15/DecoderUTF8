@@ -1,4 +1,5 @@
 #include "Decoder.h"
+#include <format>
 
 
 Decoder::Decoder() {
@@ -23,7 +24,8 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
         if ((b1 & 0x80) == 0x00){  // pattern 0xxx-xxxx (uses 7) - 1 byte - ASCHII 0x20 a 0x7E
             uint32_t codePoint = b1;
             codePoints.push_back(codePoint);
-            bytesUsed +=    1;
+            bytesUsed += 1;
+            oneByteCount ++;
         } 
         
         else if ((b1 & 0xE0) == 0xC0) {// pattern 110x-xxxx (uses 5) - 2 bytes 
@@ -57,6 +59,7 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
             }  
 
             codePoints.push_back(codePoint);
+            twoByteCount ++;
         }  
 
         else if ((b1 & 0xF0) == 0xE0) {  // pattern 1110-xxxx (uses 4)- 3 bytes
@@ -91,6 +94,7 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
             }  
 
             codePoints.push_back(codePoint);
+            threeByteCount++;
         }
 
         else if ((b1 & 0xF8) == 0xF0) { // pattern 1111-0xxx (uses 3) - 4 bytes
@@ -126,6 +130,7 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
             } 
             
             codePoints.push_back(codePoint);
+            fourByteCount++;
         }
 
         else if ((b1 & 0xC0) == 0x80) { // 10xx-xxx - Byte Huerfano (tiene codigo de continuacion)
@@ -139,7 +144,73 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
             offset++;
             continue;
         }
+
+        totalBytes += bytesUsed;
+        validUTFBytes += bytesUsed;
+        offset += bytesUsed;
+
     }
     
+
 }
 
+void Decoder::printFile () {
+    std::cout << "=== Contenido decodificado ===\n \n";
+
+    for (auto codePoint : codePoints) {
+        if (codePoint >= 0x20 && codePoint <= 0x7e) {
+            std::cout << static_cast<char>(codePoint) << std::endl;
+        }
+        else {
+            std::cout << std::format("U+{04x}", codePoint) << std::endl;
+        }
+    }
+
+}
+
+void Decoder::printErrors () {
+    std::cout << "=== Errores detectados ===\n \n";
+
+    for (auto error : Errors) {
+        std::cout << "[ offset " << error.offset << " ] ";
+        if (error.errorType == ErrorType::ContinuacionInesperada) {
+            std::cout << "Byte de continuación inesperado sin byte líder previo.\n";
+        } else if (error.errorType == ErrorType::ContinuacionNoEncontrada) {
+            std::cout << "Continuación no encontrada: el siguiente byte no tiene el patrón 10xxxxxx.\n";
+        } else if (error.errorType == ErrorType::LiderInvalido) {
+            std::cout << "Líder inválido: el byte no puede iniciar una secuencia UTF-8.\n";
+        } else if (error.errorType == ErrorType::SecuenciaIncompleta) {
+            std::cout<< "Secuencia incompleta: se esperaban bytes de continuación, EOF alcanzado.\n";
+        } else if (error.errorType == ErrorType::SobreLarga) {
+            std::cout << "Codificación sobrelarga: el code point utiliza más bytes de los necesarios.\n";
+        } 
+    }
+    std::cout << std::endl;
+}
+
+void Decoder::printReport () {
+    std::cout << "=== Resumen ===\n ";
+    std::cout << std::format (
+        "Bytes totales: {}\n"
+        "Code points válidos: {}\n"
+        " - 1 byte: {}\n"
+        " - 2 bytes: {}\n"
+        " - 3 bytes: {}\n"
+        " - 4 bytes: {}\n"
+        "Errores detectados: {}\n",
+        totalBytes,
+        codePoints.size(),
+        oneByteCount,
+        twoByteCount,
+        threeByteCount,
+        fourByteCount,
+        Errors.size()
+    );
+
+}
+
+void Decoder::getReport () {
+    printFile();
+    printErrors();
+    printReport();
+}
