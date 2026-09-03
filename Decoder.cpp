@@ -8,11 +8,11 @@ bool Decoder::codePointBiggerThanLength (int length, int offset) {
     return offset  >= length;
 }
 
-std::vector<uint32_t> Decoder::leerFileEnBufferDeBytes(const std::vector<char>& buffer) {
+void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
     int offset = 0;
     int len = buffer.size();
 
-    if (buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF){
+    if (len >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF){
         offset = 3;  // skip BOM
     }
 
@@ -141,7 +141,5 @@ std::vector<uint32_t> Decoder::leerFileEnBufferDeBytes(const std::vector<char>& 
         }
     }
     
-
-    return {};
 }
 

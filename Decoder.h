@@ -22,7 +22,7 @@ class Decoder {
     public:
     Decoder ();
     
-    std::vector<uint32_t> leerFileEnBufferDeBytes (const std::vector<char>& buffer);
+    void leerFileEnBufferDeBytes (const std::vector<uint8_t>& buffer);
 
     private:
     bool codePointBiggerThanLength (int length, int offset);
