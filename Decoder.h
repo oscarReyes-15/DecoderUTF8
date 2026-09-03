@@ -1,6 +1,9 @@
+#pragma once
+
 #include <iostream>
 #include <format>
 #include <vector>
+#include <cstdint>
 #include <string>
 
 enum ErrorType {

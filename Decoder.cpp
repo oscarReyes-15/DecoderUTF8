@@ -24,7 +24,7 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
         if ((b1 & 0x80) == 0x00){  // pattern 0xxx-xxxx (uses 7) - 1 byte - ASCHII 0x20 a 0x7E
             uint32_t codePoint = b1;
             codePoints.push_back(codePoint);
-            bytesUsed += 1;
+            bytesUsed = 1;
             oneByteCount ++;
         } 
         
@@ -155,34 +155,34 @@ void Decoder::leerFileEnBufferDeBytes(const std::vector<uint8_t>& buffer) {
 }
 
 void Decoder::printFile () {
-    std::cout << "=== Contenido decodificado ===\n \n";
+    std::cout << "=== Contenido decodificado ===\n";
 
     for (auto codePoint : codePoints) {
         if (codePoint >= 0x20 && codePoint <= 0x7e) {
             std::cout << static_cast<char>(codePoint) << std::endl;
         }
         else {
-            std::cout << std::format("U+{04x}", codePoint) << std::endl;
+            std::cout << std::format("U+{:04X}", codePoint) << std::endl;
         }
     }
 
 }
 
 void Decoder::printErrors () {
-    std::cout << "=== Errores detectados ===\n \n";
+    std::cout << "=== Errores detectados ===\n";
 
     for (auto error : Errors) {
         std::cout << "[ offset " << error.offset << " ] ";
         if (error.errorType == ErrorType::ContinuacionInesperada) {
-            std::cout << "Byte de continuación inesperado sin byte líder previo.\n";
+            std::cout << "Byte de continuacion inesperado sin byte lider previo.\n";
         } else if (error.errorType == ErrorType::ContinuacionNoEncontrada) {
-            std::cout << "Continuación no encontrada: el siguiente byte no tiene el patrón 10xxxxxx.\n";
+            std::cout << "Continuacion no encontrada: el siguiente byte no tiene el patron 10xxxxxx.\n";
         } else if (error.errorType == ErrorType::LiderInvalido) {
-            std::cout << "Líder inválido: el byte no puede iniciar una secuencia UTF-8.\n";
+            std::cout << "Lider invalido: el byte no puede iniciar una secuencia UTF-8.\n";
         } else if (error.errorType == ErrorType::SecuenciaIncompleta) {
-            std::cout<< "Secuencia incompleta: se esperaban bytes de continuación, EOF alcanzado.\n";
+            std::cout<< "Secuencia incompleta: se esperaban bytes de continuacion, EOF alcanzado.\n";
         } else if (error.errorType == ErrorType::SobreLarga) {
-            std::cout << "Codificación sobrelarga: el code point utiliza más bytes de los necesarios.\n";
+            std::cout << "Codificacion sobrelarga: el code point utiliza mas bytes de los necesarios.\n";
         } 
     }
     std::cout << std::endl;
@@ -192,7 +192,7 @@ void Decoder::printReport () {
     std::cout << "=== Resumen ===\n ";
     std::cout << std::format (
         "Bytes totales: {}\n"
-        "Code points válidos: {}\n"
+        "Code points validos: {}\n"
         " - 1 byte: {}\n"
         " - 2 bytes: {}\n"
         " - 3 bytes: {}\n"
